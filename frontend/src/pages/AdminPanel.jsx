@@ -1,12 +1,13 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
-import { ArrowLeft, Plus, Pencil, Trash2, Package, FolderOpen } from "lucide-react";
+import { ArrowLeft, Plus, Pencil, Trash2, Package, FolderOpen, Users, Shield } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
@@ -15,10 +16,13 @@ const API = `${BACKEND_URL}/api`;
 const AdminPanel = () => {
   const [products, setProducts] = useState([]);
   const [categories, setCategories] = useState([]);
+  const [users, setUsers] = useState([]);
+  const [currentUser, setCurrentUser] = useState(null);
   const [openProductDialog, setOpenProductDialog] = useState(false);
   const [openCategoryDialog, setOpenCategoryDialog] = useState(false);
   const [editingProduct, setEditingProduct] = useState(null);
   const [editingCategory, setEditingCategory] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   const [productForm, setProductForm] = useState({
     name: "",
@@ -35,13 +39,36 @@ const AdminPanel = () => {
   });
 
   useEffect(() => {
-    fetchProducts();
-    fetchCategories();
+    checkAuth();
   }, []);
+
+  const checkAuth = async () => {
+    try {
+      const response = await axios.get(`${API}/auth/me`, { withCredentials: true });
+      const user = response.data;
+      if (!user.is_admin && !user.is_owner) {
+        toast.error("Access denied. Admin privileges required.");
+        window.location.href = '/';
+        return;
+      }
+      setCurrentUser(user);
+      fetchProducts();
+      fetchCategories();
+      if (user.is_owner) {
+        fetchUsers();
+      }
+    } catch (error) {
+      toast.error("Please login as admin");
+      const redirectUrl = encodeURIComponent(window.location.origin);
+      window.location.href = `https://auth.emergentagent.com/?redirect=${redirectUrl}`;
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const fetchProducts = async () => {
     try {
-      const response = await axios.get(`${API}/products`);
+      const response = await axios.get(`${API}/products`, { withCredentials: true });
       setProducts(response.data);
     } catch (error) {
       console.error("Error fetching products:", error);
@@ -51,11 +78,21 @@ const AdminPanel = () => {
 
   const fetchCategories = async () => {
     try {
-      const response = await axios.get(`${API}/categories`);
+      const response = await axios.get(`${API}/categories`, { withCredentials: true });
       setCategories(response.data);
     } catch (error) {
       console.error("Error fetching categories:", error);
       toast.error("Failed to load categories");
+    }
+  };
+
+  const fetchUsers = async () => {
+    try {
+      const response = await axios.get(`${API}/admin/users`, { withCredentials: true });
+      setUsers(response.data);
+    } catch (error) {
+      console.error("Error fetching users:", error);
+      toast.error("Failed to load users");
     }
   };
 
@@ -67,14 +104,14 @@ const AdminPanel = () => {
           ...productForm,
           price: parseFloat(productForm.price),
           stock: parseInt(productForm.stock)
-        });
+        }, { withCredentials: true });
         toast.success("Product updated successfully");
       } else {
         await axios.post(`${API}/products`, {
           ...productForm,
           price: parseFloat(productForm.price),
           stock: parseInt(productForm.stock)
-        });
+        }, { withCredentials: true });
         toast.success("Product created successfully");
       }
       setOpenProductDialog(false);
@@ -91,10 +128,10 @@ const AdminPanel = () => {
     e.preventDefault();
     try {
       if (editingCategory) {
-        await axios.put(`${API}/categories/${editingCategory.id}`, categoryForm);
+        await axios.put(`${API}/categories/${editingCategory.id}`, categoryForm, { withCredentials: true });
         toast.success("Category updated successfully");
       } else {
-        await axios.post(`${API}/categories`, categoryForm);
+        await axios.post(`${API}/categories`, categoryForm, { withCredentials: true });
         toast.success("Category created successfully");
       }
       setOpenCategoryDialog(false);
@@ -110,7 +147,7 @@ const AdminPanel = () => {
   const handleDeleteProduct = async (id) => {
     if (!window.confirm("Are you sure you want to delete this product?")) return;
     try {
-      await axios.delete(`${API}/products/${id}`);
+      await axios.delete(`${API}/products/${id}`, { withCredentials: true });
       toast.success("Product deleted successfully");
       fetchProducts();
     } catch (error) {
@@ -122,12 +159,26 @@ const AdminPanel = () => {
   const handleDeleteCategory = async (id) => {
     if (!window.confirm("Are you sure you want to delete this category?")) return;
     try {
-      await axios.delete(`${API}/categories/${id}`);
+      await axios.delete(`${API}/categories/${id}`, { withCredentials: true });
       toast.success("Category deleted successfully");
       fetchCategories();
     } catch (error) {
       console.error("Error deleting category:", error);
       toast.error("Failed to delete category");
+    }
+  };
+
+  const handleToggleAdmin = async (userEmail, currentStatus) => {
+    try {
+      await axios.put(`${API}/admin/users/${userEmail}`, {
+        email: userEmail,
+        is_admin: !currentStatus
+      }, { withCredentials: true });
+      toast.success("Admin status updated");
+      fetchUsers();
+    } catch (error) {
+      console.error("Error updating admin status:", error);
+      toast.error(error.response?.data?.detail || "Failed to update admin status");
     }
   };
 
@@ -153,22 +204,40 @@ const AdminPanel = () => {
     setOpenCategoryDialog(true);
   };
 
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-[#0a0a0b] flex items-center justify-center">
+        <div className="text-center">
+          <div className="inline-block animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-orange-500"></div>
+          <p className="mt-6 text-gray-400">Loading admin panel...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="min-h-screen bg-[#0f0f10]">
+    <div className="min-h-screen bg-[#0a0a0b]">
       {/* Header */}
-      <div className="bg-[#1a1a1d] border-b border-white/10">
+      <div className="bg-[#0f0f11] border-b border-white/5">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-4">
               <Button
                 data-testid="back-to-home-button"
-                variant="ghost"
+                className="btn-secondary"
                 onClick={() => window.location.href = '/'}
               >
                 <ArrowLeft className="mr-2" size={20} />
                 Back to Store
               </Button>
-              <h1 className="text-3xl font-bold" data-testid="admin-panel-title">Admin Panel</h1>
+              <div>
+                <h1 className="text-3xl font-bold" data-testid="admin-panel-title">Admin Panel</h1>
+                {currentUser && (
+                  <p className="text-sm text-gray-400 mt-1">
+                    {currentUser.is_owner ? 'Owner' : 'Admin'} • {currentUser.email}
+                  </p>
+                )}
+              </div>
             </div>
           </div>
         </div>
@@ -177,7 +246,7 @@ const AdminPanel = () => {
       {/* Content */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <Tabs defaultValue="products" className="w-full">
-          <TabsList className="grid w-full max-w-md grid-cols-2 mb-8">
+          <TabsList className="grid w-full max-w-2xl grid-cols-3 mb-8">
             <TabsTrigger value="products" data-testid="products-tab">
               <Package className="mr-2" size={18} />
               Products
@@ -186,6 +255,12 @@ const AdminPanel = () => {
               <FolderOpen className="mr-2" size={18} />
               Categories
             </TabsTrigger>
+            {currentUser?.is_owner && (
+              <TabsTrigger value="admins" data-testid="admins-tab">
+                <Users className="mr-2" size={18} />
+                Admin Access
+              </TabsTrigger>
+            )}
           </TabsList>
 
           {/* Products Tab */}
@@ -292,13 +367,13 @@ const AdminPanel = () => {
                     <img
                       src={product.imageUrl}
                       alt={product.name}
-                      className="w-20 h-20 object-cover rounded-lg"
+                      className="w-24 h-24 object-cover rounded-xl"
                     />
                     <div>
                       <h3 className="font-semibold text-lg">{product.name}</h3>
-                      <p className="text-sm text-gray-400">{product.description.substring(0, 80)}...</p>
-                      <div className="flex items-center space-x-4 mt-2">
-                        <span className="text-orange-500 font-bold">${product.price}</span>
+                      <p className="text-sm text-gray-400 mt-1">{product.description.substring(0, 100)}...</p>
+                      <div className="flex items-center space-x-4 mt-3">
+                        <span className="text-orange-400 font-bold text-lg">${product.price}</span>
                         <span className="category-badge">{product.category}</span>
                         <span className="text-sm text-gray-400">Stock: {product.stock}</span>
                       </div>
@@ -409,6 +484,52 @@ const AdminPanel = () => {
               ))}
             </div>
           </TabsContent>
+
+          {/* Admin Access Tab (Owner Only) */}
+          {currentUser?.is_owner && (
+            <TabsContent value="admins">
+              <div className="mb-6">
+                <h2 className="text-2xl font-semibold mb-2">Manage Admin Access</h2>
+                <p className="text-gray-400">Control who can access the admin panel</p>
+              </div>
+
+              <div className="space-y-4">
+                {users.map((user) => (
+                  <div key={user.id} className="admin-card flex items-center justify-between">
+                    <div className="flex items-center space-x-4">
+                      <img
+                        src={user.picture}
+                        alt={user.name}
+                        className="w-12 h-12 rounded-full"
+                      />
+                      <div>
+                        <h3 className="font-semibold">{user.name}</h3>
+                        <p className="text-sm text-gray-400">{user.email}</p>
+                        {user.is_owner && (
+                          <span className="inline-flex items-center text-xs bg-orange-500/20 text-orange-400 px-2 py-1 rounded mt-1">
+                            <Shield size={12} className="mr-1" />
+                            Owner
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                    <div className="flex items-center space-x-3">
+                      <Label htmlFor={`admin-${user.id}`} className="text-sm">
+                        Admin Access
+                      </Label>
+                      <Switch
+                        id={`admin-${user.id}`}
+                        data-testid={`admin-toggle-${user.email}`}
+                        checked={user.is_admin}
+                        onCheckedChange={() => handleToggleAdmin(user.email, user.is_admin)}
+                        disabled={user.is_owner}
+                      />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </TabsContent>
+          )}
         </Tabs>
       </div>
     </div>
