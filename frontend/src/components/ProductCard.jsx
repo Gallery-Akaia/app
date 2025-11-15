@@ -1,7 +1,9 @@
 import { ShoppingCart, Eye } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useCart } from "@/contexts/CartContext";
 
 const ProductCard = ({ product, onViewDetails, onOrder }) => {
+  const { addToCart } = useCart();
   return (
     <div
       className="product-card glass-effect rounded-xl overflow-hidden group"
