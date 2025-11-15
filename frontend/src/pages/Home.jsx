@@ -104,6 +104,14 @@ const Home = () => {
     setSearchQuery("");
   };
 
+  const handleAdminPanelClick = () => {
+    setShowPasswordModal(true);
+  };
+
+  const handlePasswordSuccess = () => {
+    window.location.href = '/admin';
+  };
+
   return (
     <div className="min-h-screen bg-[#0a0a0b]">
       {/* Hero Section */}
