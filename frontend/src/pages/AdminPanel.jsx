@@ -24,6 +24,8 @@ const AdminPanel = () => {
   const [editingProduct, setEditingProduct] = useState(null);
   const [editingCategory, setEditingCategory] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [showPasswordModal, setShowPasswordModal] = useState(false);
+  const [isPasswordVerified, setIsPasswordVerified] = useState(false);
 
   const [productForm, setProductForm] = useState({
     name: "",
