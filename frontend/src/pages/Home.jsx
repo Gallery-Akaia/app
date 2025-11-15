@@ -116,7 +116,8 @@ const Home = () => {
   };
 
   return (
-    <div className="min-h-screen bg-[#0a0a0b]">
+    <CartProvider>
+      <div className="min-h-screen bg-[#0a0a0b]">
       {/* Hero Section */}
       <section className="hero-gradient relative overflow-hidden">
         {/* Animated Background Orbs */}
