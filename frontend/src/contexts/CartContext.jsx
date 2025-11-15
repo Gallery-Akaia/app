@@ -4,16 +4,16 @@ import { toast } from 'sonner';
 // Cart Context for managing shopping cart state globally
 const CartContext = createContext();
 
-// Cart item structure
-const cartItem = {
-  id: '',
-  name: '',
-  price: 0,
-  imageUrl: '',
-  category: '',
-  quantity: 1,
-  stock: 0
-};
+// Cart item structure (commented out as it's just for reference)
+// const cartItem = {
+//   id: '',
+//   name: '',
+//   price: 0,
+//   imageUrl: '',
+//   category: '',
+//   quantity: 1,
+//   stock: 0
+// };
 
 // Cart actions
 const CART_ACTIONS = {
