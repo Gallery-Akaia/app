@@ -217,6 +217,15 @@ const AdminPanel = () => {
     setOpenCategoryDialog(true);
   };
 
+  const handlePasswordSuccess = () => {
+    setIsPasswordVerified(true);
+    setShowPasswordModal(false);
+  };
+
+  const handleBackToHome = () => {
+    window.location.href = '/';
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-[#0a0a0b] flex items-center justify-center">
