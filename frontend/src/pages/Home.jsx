@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import ProductCard from "@/components/ProductCard";
 import ProductModal from "@/components/ProductModal";
+import AdminPasswordModal from "@/components/AdminPasswordModal";
 import { Slider } from "@/components/ui/slider";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
