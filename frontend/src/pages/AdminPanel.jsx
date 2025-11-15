@@ -237,6 +237,19 @@ const AdminPanel = () => {
     );
   }
 
+  // Show password modal if not verified yet
+  if (!isPasswordVerified && currentUser) {
+    return (
+      <div className="min-h-screen bg-[#0a0a0b] flex items-center justify-center">
+        <AdminPasswordModal
+          isOpen={showPasswordModal}
+          onClose={handleBackToHome}
+          onSuccess={handlePasswordSuccess}
+        />
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-[#0a0a0b]">
       {/* Header */}
