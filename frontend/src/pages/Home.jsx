@@ -376,6 +376,13 @@ const Home = () => {
           onOrder={() => handleOrderWhatsApp(selectedProduct)}
         />
       )}
+
+      {/* Admin Password Modal */}
+      <AdminPasswordModal
+        isOpen={showPasswordModal}
+        onClose={() => setShowPasswordModal(false)}
+        onSuccess={handlePasswordSuccess}
+      />
     </div>
   );
 };
