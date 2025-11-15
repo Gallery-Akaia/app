@@ -396,7 +396,14 @@ const Home = () => {
         onClose={() => setShowPasswordModal(false)}
         onSuccess={handlePasswordSuccess}
       />
-    </div>
+
+      {/* Shopping Cart */}
+      <Cart
+        isOpen={showCart}
+        onClose={() => setShowCart(false)}
+      />
+      </div>
+    </CartProvider>
   );
 };
 
