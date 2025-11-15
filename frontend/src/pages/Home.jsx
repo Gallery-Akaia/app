@@ -137,7 +137,7 @@ const Home = () => {
                     <Button
                       data-testid="admin-panel-button"
                       className="btn-secondary"
-                      onClick={() => window.location.href = '/admin'}
+                      onClick={handleAdminPanelClick}
                     >
                       Admin Panel
                     </Button>
