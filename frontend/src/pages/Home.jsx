@@ -25,6 +25,7 @@ const Home = () => {
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState(null);
+  const [showPasswordModal, setShowPasswordModal] = useState(false);
 
   useEffect(() => {
     checkAuth();
