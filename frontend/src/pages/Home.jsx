@@ -146,6 +146,15 @@ const Home = () => {
                     </Button>
                   )}
                   <Button
+                    data-testid="cart-button"
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => setShowCart(true)}
+                    className="relative"
+                  >
+                    <ShoppingCart size={20} />
+                  </Button>
+                  <Button
                     data-testid="logout-button"
                     variant="ghost"
                     size="icon"
