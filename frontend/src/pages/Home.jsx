@@ -155,6 +155,11 @@ const Home = () => {
                     className="relative"
                   >
                     <ShoppingCart size={20} />
+                    {totalItems > 0 && (
+                      <span className="absolute -top-2 -right-2 bg-orange-500 text-white text-xs font-bold px-2 py-1 rounded-full min-w-[20px] h-[20px] flex items-center justify-center">
+                        {totalItems}
+                      </span>
+                    )}
                   </Button>
                   <Button
                     data-testid="logout-button"
