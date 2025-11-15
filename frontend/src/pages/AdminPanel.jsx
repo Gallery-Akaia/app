@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
+import AdminPasswordModal from "@/components/AdminPasswordModal";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
@@ -23,6 +24,8 @@ const AdminPanel = () => {
   const [editingProduct, setEditingProduct] = useState(null);
   const [editingCategory, setEditingCategory] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [showPasswordModal, setShowPasswordModal] = useState(false);
+  const [isPasswordVerified, setIsPasswordVerified] = useState(false);
 
   const [productForm, setProductForm] = useState({
     name: "",
@@ -41,6 +44,16 @@ const AdminPanel = () => {
   useEffect(() => {
     checkAuth();
   }, []);
+
+  useEffect(() => {
+    // Check if password is already verified in this session
+    const verified = sessionStorage.getItem("admin_password_verified") === "true";
+    setIsPasswordVerified(verified);
+
+    if (!verified && currentUser) {
+      setShowPasswordModal(true);
+    }
+  }, [currentUser]);
 
   const checkAuth = async () => {
     try {
@@ -204,6 +217,15 @@ const AdminPanel = () => {
     setOpenCategoryDialog(true);
   };
 
+  const handlePasswordSuccess = () => {
+    setIsPasswordVerified(true);
+    setShowPasswordModal(false);
+  };
+
+  const handleBackToHome = () => {
+    window.location.href = '/';
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-[#0a0a0b] flex items-center justify-center">
@@ -211,6 +233,19 @@ const AdminPanel = () => {
           <div className="inline-block animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-orange-500"></div>
           <p className="mt-6 text-gray-400">Loading admin panel...</p>
         </div>
+      </div>
+    );
+  }
+
+  // Show password modal if not verified yet
+  if (!isPasswordVerified && currentUser) {
+    return (
+      <div className="min-h-screen bg-[#0a0a0b] flex items-center justify-center">
+        <AdminPasswordModal
+          isOpen={showPasswordModal}
+          onClose={handleBackToHome}
+          onSuccess={handlePasswordSuccess}
+        />
       </div>
     );
   }

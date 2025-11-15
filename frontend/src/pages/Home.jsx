@@ -1,11 +1,14 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
-import { Search, Filter, X, Menu, LogOut } from "lucide-react";
+import { Search, Filter, X, Menu, LogOut, ShoppingCart } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import ProductCard from "@/components/ProductCard";
 import ProductModal from "@/components/ProductModal";
+import AdminPasswordModal from "@/components/AdminPasswordModal";
+import Cart from "@/components/Cart";
+import { CartProvider, useCart } from "@/contexts/CartContext";
 import { Slider } from "@/components/ui/slider";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
@@ -24,6 +27,9 @@ const Home = () => {
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [loading, setLoading] = useState(true);
   const [user, setUser] = useState(null);
+  const [showPasswordModal, setShowPasswordModal] = useState(false);
+  const [showCart, setShowCart] = useState(false);
+  const { totalItems } = useCart();
 
   useEffect(() => {
     checkAuth();
@@ -102,8 +108,17 @@ const Home = () => {
     setSearchQuery("");
   };
 
+  const handleAdminPanelClick = () => {
+    setShowPasswordModal(true);
+  };
+
+  const handlePasswordSuccess = () => {
+    window.location.href = '/admin';
+  };
+
   return (
-    <div className="min-h-screen bg-[#0a0a0b]">
+    <CartProvider>
+      <div className="min-h-screen bg-[#0a0a0b]">
       {/* Hero Section */}
       <section className="hero-gradient relative overflow-hidden">
         {/* Animated Background Orbs */}
@@ -127,11 +142,25 @@ const Home = () => {
                     <Button
                       data-testid="admin-panel-button"
                       className="btn-secondary"
-                      onClick={() => window.location.href = '/admin'}
+                      onClick={handleAdminPanelClick}
                     >
                       Admin Panel
                     </Button>
                   )}
+                  <Button
+                    data-testid="cart-button"
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => setShowCart(true)}
+                    className="relative"
+                  >
+                    <ShoppingCart size={20} />
+                    {totalItems > 0 && (
+                      <span className="absolute -top-2 -right-2 bg-orange-500 text-white text-xs font-bold px-2 py-1 rounded-full min-w-[20px] h-[20px] flex items-center justify-center">
+                        {totalItems}
+                      </span>
+                    )}
+                  </Button>
                   <Button
                     data-testid="logout-button"
                     variant="ghost"
@@ -366,7 +395,21 @@ const Home = () => {
           onOrder={() => handleOrderWhatsApp(selectedProduct)}
         />
       )}
-    </div>
+
+      {/* Admin Password Modal */}
+      <AdminPasswordModal
+        isOpen={showPasswordModal}
+        onClose={() => setShowPasswordModal(false)}
+        onSuccess={handlePasswordSuccess}
+      />
+
+      {/* Shopping Cart */}
+      <Cart
+        isOpen={showCart}
+        onClose={() => setShowCart(false)}
+      />
+      </div>
+    </CartProvider>
   );
 };
 
