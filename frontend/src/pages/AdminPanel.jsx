@@ -45,6 +45,16 @@ const AdminPanel = () => {
     checkAuth();
   }, []);
 
+  useEffect(() => {
+    // Check if password is already verified in this session
+    const verified = sessionStorage.getItem("admin_password_verified") === "true";
+    setIsPasswordVerified(verified);
+
+    if (!verified && currentUser) {
+      setShowPasswordModal(true);
+    }
+  }, [currentUser]);
+
   const checkAuth = async () => {
     try {
       const response = await axios.get(`${API}/auth/me`, { withCredentials: true });
