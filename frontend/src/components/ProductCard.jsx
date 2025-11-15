@@ -58,13 +58,22 @@ const ProductCard = ({ product, onViewDetails, onOrder }) => {
             Details
           </Button>
           <Button
-            data-testid={`order-button-${product.id}`}
+            data-testid={`add-to-cart-${product.id}`}
             className="flex-1 btn-primary"
-            onClick={onOrder}
+            onClick={() => addToCart(product)}
             disabled={product.stock === 0}
           >
             <ShoppingCart size={18} className="mr-2" />
-            Order
+            Add to Cart
+          </Button>
+          <Button
+            data-testid={`order-button-${product.id}`}
+            variant="outline"
+            className="flex-1 border-white/20 hover:bg-white/10"
+            onClick={onOrder}
+            disabled={product.stock === 0}
+          >
+            Order Now
           </Button>
         </div>
       </div>
